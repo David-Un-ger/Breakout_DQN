@@ -48,29 +48,36 @@ class Game:
 
     def play_normal_game(self):
         done = False
+        q = False
         self.env.reset()
+
         while not done:
 
             action = 0
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    done = True  # end currend episode
+                    q = True  # end currend episode
                     self.done = True # end whole game/session
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        action = 1
-                    if event.key == pygame.K_RIGHT:
                         action = 2
-
-                    if event.key == pygame.K_q:
+                    elif event.key == pygame.K_RIGHT:
+                        action = 3
+                    elif event.key == pygame.K_SPACE:  # release ball
+                        action = 1
+                    elif event.key == pygame.K_q:
                         print("Quit game")
-                        done = True # just end episode
-
+                        q = True # just end episode
+            
             next_state, reward, done, info = self.env.step(action)
-            #print(next_state.shape, reward, done, info)
+            print(next_state.shape, reward, done, info)
             img = self.env.render(mode='rgb_array')
             img = pygame.surfarray.make_surface(img)
+            img = pygame.transform.rotate(img, 270)
+            img = pygame.transform.scale2x(img)
             self.win.blit(img, (0, 180))
-            self.clock.tick(30)
+            self.clock.tick(15)
             pygame.display.update()
+            if q:
+                done = True
