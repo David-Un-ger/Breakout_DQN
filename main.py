@@ -3,7 +3,7 @@ import numpy as np
 import time
 import pygame
 from game import Game
-from dqn import DQN
+#from dqn import DQN
 
 import gym
 
@@ -13,7 +13,7 @@ env = gym.make("Breakout-ram-v0")
 env.reset()
 
 game = Game(env)
-dqn = DQN()
+#dqn = DQN()
 
 
 while not game.done:

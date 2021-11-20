@@ -24,7 +24,7 @@ class Game:
 
     def draw_main_menu(self):
         self.clock.tick(30)
-        #self.win.fill((0,0,0))
+        self.win.fill((0,0,0))
 
         text = FONT_LARGE.render("Breakout DQN", True, (255, 255, 255))
         self.win.blit(text, (30, 30))
@@ -46,10 +46,36 @@ class Game:
         pygame.display.update()
 
 
+    def draw_training(score, episode, self):
+        self.clock.tick(30)
+        self.win.fill((0,0,0))
+
+        text = FONT_LARGE.render("Breakout DQN", True, (255, 255, 255))
+        self.win.blit(text, (30, 30))
+
+        text = FONT_MID.render("Episode: " + str(episode) + ", Score: " + str(score), True, (255, 255, 255))
+        self.win.blit(text, (30, 600))
+
+        pygame.display.update()
+
+    def draw_play_ai_game(score, episode, self):
+        self.clock.tick(30)
+        self.win.fill((0,0,0))
+
+        text = FONT_LARGE.render("Breakout DQN", True, (255, 255, 255))
+        self.win.blit(text, (30, 30))
+
+        text = FONT_MID.render("Episode: " + str(episode) + ", Score: " + str(score), True, (255, 255, 255))
+        self.win.blit(text, (30, 600))
+
+        pygame.display.update()
+
     def play_normal_game(self):
         done = False
         q = False
         self.env.reset()
+
+        score = 0
 
         while not done:
 
@@ -61,9 +87,9 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        action = 2
-                    elif event.key == pygame.K_RIGHT:
                         action = 3
+                    elif event.key == pygame.K_RIGHT:
+                        action = 2
                     elif event.key == pygame.K_SPACE:  # release ball
                         action = 1
                     elif event.key == pygame.K_q:
@@ -71,12 +97,28 @@ class Game:
                         q = True # just end episode
             
             next_state, reward, done, info = self.env.step(action)
-            print(next_state.shape, reward, done, info)
+            score += reward
+
             img = self.env.render(mode='rgb_array')
             img = pygame.surfarray.make_surface(img)
             img = pygame.transform.rotate(img, 270)
+            img = pygame.transform.flip(img, True, False)
             img = pygame.transform.scale2x(img)
+            
+            self.win.fill((0,0,0))
+
             self.win.blit(img, (0, 180))
+
+            text = FONT_LARGE.render("Breakout DQN", True, (255, 255, 255))
+            self.win.blit(text, (30, 30))
+
+            text = FONT_MID.render("Release ball game - Press SPACE", True, (255, 255, 255))
+            self.win.blit(text, (30, 600))
+
+            text = FONT_MID.render("Score: " + str(score), True, (255, 255, 255))
+            self.win.blit(text, (30, 650))
+
+
             self.clock.tick(15)
             pygame.display.update()
             if q:
