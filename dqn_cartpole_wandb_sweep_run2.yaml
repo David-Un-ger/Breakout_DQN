@@ -1,0 +1,31 @@
+program: dqn_cartpole_wandb_sweep.py
+method: random
+parameters:
+  batch_size:
+    values: [16]
+  learning_rate:
+    values: [0.001, 0.01]
+  gamma: 
+    values: [0.5, 0.75, 0.9]
+  epsilon_start: 
+    values: [0.3, 0.5, 0.8]
+  epsilon_stop: 
+    values: [0, 0.1]
+  memory_size: 
+    values: [5000]
+  update_target_model: 
+    values: [1]
+  epochs:
+    values: [1, 10]
+  dense_neurons_0: 
+    values: [32, 64, 128]
+  dense_neurons_1: 
+    values: [0, 16, 64]
+  dense_neurons_2: 
+    values: [0]
+name: run2
+project: dqn_cartpole
+command:
+  - c:\Scarlett\base39\Scripts\python.exe
+  - ${program}
+

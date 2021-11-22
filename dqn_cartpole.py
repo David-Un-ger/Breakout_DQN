@@ -8,7 +8,6 @@ import gym
 Cartpole:
 The DQN trains and reaches a score of over 100 within the first 100 episodes and a a score of 498 (=maximum) within 200 episodes.
 A grid search to find the optimal hyperparameter would be beneficial...
-
 """
 
 class DQN:
@@ -121,6 +120,5 @@ class DQN:
                 self.target_model.set_weights(self.behavior_model.get_weights())
                 
                 
-
 dqn = DQN()
 dqn.train()
