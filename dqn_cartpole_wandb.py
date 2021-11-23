@@ -1,42 +1,46 @@
+import wandb
 import tensorflow as tf
 import tensorflow.keras as keras
 import numpy as np
 import random
 import gym
 import os
-import wandb
 from wandb.keras import WandbCallback
 
 # use seeds for maximum reproducibility
 os.environ['TF_CUDNN_DETERMINISTIC'] = '1'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # warnings and errors are not printed (nvcuda.dll dlerror)
+os.environ['WANDB_DIR'] = "C:\Scarlett\wandb\dqn_cartpole"
+
 random.seed(42)
 np.random.seed(42)
 tf.random.set_seed(42)
 
 """ 
 Cartpole:
-The DQN trains and reaches a score of over 100 within the first 100 episodes and a a score of 498 (=maximum) within 200 episodes.
-A grid search to find the optimal hyperparameter would be beneficial...
+Used a wandb sweep to find good parameters. Default parameters can win the game within 50 episodes.
 """
+
+default_config={"env": 'CartPole-v1',  # "Breakout-ram-v0"  
+                "loss_function": "mse",
+                "episodes": 50,
+                
+                "batch_size": 16,
+                "learning_rate": 0.001,
+                "gamma": 0.9,
+                "epsilon_start": 0.8,
+                "epsilon_stop": 0.1,
+                "memory_size": 5000,
+                "update_target_model": 1,
+                "epochs": 10,
+                "dense_neurons_0": 64,
+                "dense_neurons_1": 16,
+                "dense_neurons_2": 0
+                }
 
 run = wandb.init(project="dqn_cartpole", 
                 entity="davidu",
-                config={
-                        "env": 'CartPole-v1',  # "Breakout-ram-v0"  
-                        "episodes": 100,
-                        "batch_size": 64,
-                        "learning_rate": 0.0005,
-                        "loss_function": "mse",
-                        "gamma": 0.99,
-                        "epsilon_start": 1.0,
-                        "epsilon_stop": 0.1,
-                        "memory_size": 2000,
-                        "update_target_model": 1,
-                        "dense_neurons_0": 16,
-                        "dense_neurons_1": 16,
-                        "dense_neurons_2": 8
-                })
+                config=default_config)
 
 config = wandb.config    
 
@@ -70,7 +74,7 @@ class DQN:
 
 
     def train(self):
-        for epoch in range(self.config.episodes):
+        for episode in range(self.config.episodes):
             state = self.env.reset()
             done = False
             score = 0
@@ -89,7 +93,7 @@ class DQN:
                 if done and (score < 498):
                     lost = True
                 elif done:
-                    print(f"Won game after {epoch} episodes!!!")
+                    print(f"Won game after {episode} episodes!!!")
 
                 if lost:
                     reward = -10
@@ -110,7 +114,7 @@ class DQN:
             
 
             # 1.3 episode is done
-            print(f"Episode {epoch} finished. Epsilon: {self.epsilon:.2f} ",
+            print(f"Episode {episode} finished. Epsilon: {self.epsilon:.2f} ",
                 f"Memory length {len(self.memory)} ",
                 #f"Learning rate: {keras.backend.eval(self.behavior_model.optimizer.lr):.4f}",
                 f"Score is: {score}")
@@ -121,7 +125,7 @@ class DQN:
                 "score": score,
                 "memory": len(self.memory),
                 "epsilon": self.epsilon,
-                "episode": epoch
+                "episode": episode
             })
 
             # 2 train the DQN using the replay memory
@@ -152,13 +156,13 @@ class DQN:
                 self.behavior_model.fit(states, 
                                         q_values, 
                                         batch_size=self.config.batch_size, 
-                                        epochs=100,
+                                        epochs=self.config.epochs,
                                         verbose=0, 
                                         shuffle=True,
                                         callbacks=[WandbCallback()])
                 
             # 2.2 update target_model every "update_target_model"th episode
-            if epoch % self.config.update_target_model == 0:
+            if episode % self.config.update_target_model == 0:
                 self.target_model.set_weights(self.behavior_model.get_weights())
                      
 dqn = DQN(config)
